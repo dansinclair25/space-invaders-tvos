@@ -7,8 +7,10 @@
 //
 
 import SpriteKit
+import GameKit
+import GameController
 
-class GameScene: SKScene {
+class GameScene: SKScene, ReactToMotionEvents {
     
     enum InvaderType {
         case A
@@ -43,6 +45,10 @@ class GameScene: SKScene {
     let timePerMove: CFTimeInterval = 1.0
     
     override func didMoveToView(view: SKView) {
+        
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        appDelegate.motionDelegate = self
+        
         /* Setup your scene here */
         if (!contentCreated) {
             createContent()
@@ -118,6 +124,12 @@ class GameScene: SKScene {
     func makeShip() -> SKNode {
         let ship = SKSpriteNode(color: SKColor.orangeColor(), size: kShipSize)
         ship.name = kShipName
+        
+        ship.physicsBody = SKPhysicsBody(rectangleOfSize: ship.frame.size)
+        ship.physicsBody!.dynamic = true
+        ship.physicsBody!.affectedByGravity = false
+        ship.physicsBody!.mass = 0.02
+
         return ship
     }
     
@@ -201,6 +213,10 @@ class GameScene: SKScene {
         if (proposedMovementDirection != invaderMovementDirection) {
             invaderMovementDirection = proposedMovementDirection
         }
+    }
+    
+    func motionUpdate(motion: GCMotion) {
+        print("x: \(motion.userAcceleration.x)   y: \(motion.userAcceleration.y)")
     }
    
     override func update(currentTime: CFTimeInterval) {

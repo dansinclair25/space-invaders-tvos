@@ -7,15 +7,28 @@
 //
 
 import UIKit
+import GameKit
+
+protocol ReactToMotionEvents {
+    func motionUpdate(motion: GCMotion) -> Void
+}
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    
+    var motionDelegate: ReactToMotionEvents? = nil
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        let center = NSNotificationCenter.defaultCenter()
+        center.addObserver(self, selector: "setupControllers:", name: GCControllerDidConnectNotification, object: nil)
+        center.addObserver(self, selector: "setupControllers:", name: GCControllerDidDisconnectNotification, object: nil)
+        GCController.startWirelessControllerDiscoveryWithCompletionHandler { () -> Void in
+            
+        }
         return true
     }
 
@@ -39,6 +52,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+    
+    func setupControllers(notif: NSNotification) {
+        print("controller connection")
+        let controllers = GCController.controllers()
+        for controller in controllers {
+            controller.motion?.valueChangedHandler = { (motion: GCMotion)->() in
+                if let delegate = self.motionDelegate {
+                    delegate.motionUpdate(motion)
+                }
+            }
+        }
     }
 
 
